@@ -25,6 +25,11 @@
 //Make sure that you close the file with fclose before returning.
 Image *readData(char *filename) 
 {
+	//This is the implementation of "Dynamic Pointer Array of Single-Dynamic Allocated Structs" under:
+	//https://stackoverflow.com/questions/15397728/c-pointer-to-array-of-pointers-to-structures-allocation-deallocation-issues
+	//It is the more efficient implementation compared to "Dynamic Array of Dynamically Allocated Structs"
+	//However, we need the fexiblity of "Dynamic Array of Dynamically Allocated Structs"
+	//So this implemetation is deprecated.
 	FILE *fp = fopen(filename, "r");
 
 	char buf[20];
@@ -38,14 +43,14 @@ Image *readData(char *filename)
 	image->rows = num2;
 	image->cols = num1;
 	image->image = calloc(num1 * num2, sizeof(Color *));
+	Color *arr = calloc(num1 * num2, sizeof(Color));
 
 	for (int i = 0; i < image->rows * image->cols && fscanf(fp, "%d %d %d", &num1, &num2, &num3) != EOF; i++)
 	{
-		Color *c = malloc(sizeof(Color));
-		c->R = num1;
-		c->G = num2;
-		c->B = num3;
-		(image->image)[i] = c;
+		arr[i].R = num1;
+		arr[i].G = num2;
+		arr[i].B = num3;
+		(image->image)[i] = arr + i;
 	}
 	fclose(fp);
 	return image;
@@ -74,11 +79,7 @@ void writeData(Image *image)
 //Frees an image
 void freeImage(Image *image)
 {
-	for (int i = 0; i < image->rows * image->cols; i++)
-        {
-                free(image->image[i]);
-        }
-
+	free((image->image)[0]);
 	free(image->image);
 	free(image);
 }
